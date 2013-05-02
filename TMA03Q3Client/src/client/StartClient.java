@@ -1,5 +1,8 @@
 package client;
 
+import client.console.ClientConsole;
+import client.ui.Application;
+import core.protocol.exceptions.MessageException;
 import java.util.logging.*;
 
 /**
@@ -11,9 +14,26 @@ import java.util.logging.*;
 
 public class StartClient
 {
-   public static void main(String[] args)
+   public static void main(String[] args) throws MessageException
    {
-        Client client1 = new Client();
-        client1.run();
+        boolean loadUI = false;
+        if (args.length > 0)
+        {
+            if (args[0].equals("--ui"))
+            {
+                loadUI = true;
+            }
+        }
+
+        if (!loadUI)
+        {
+            ClientConsole console = new ClientConsole();
+            console.run();
+        }
+        else
+        {
+            Application application = new Application();
+            application.setVisible(true);
+        }
    }
 }

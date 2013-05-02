@@ -1,6 +1,7 @@
 package core.protocol;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  *
@@ -13,6 +14,8 @@ public abstract class Message
     private String body;
     private float version;
     private HeaderCollection headers;
+    private Date messageCreatedDate;
+    private String correlationToken;
 
     protected Message()
     {
@@ -24,6 +27,7 @@ public abstract class Message
         this.headers = new HeaderCollection();
         this.rawMessage = rawMessage;
         this.setVersion(1.0f);
+        this.messageCreatedDate = new Date();
     }
        
     public Verb getVerb()
@@ -114,5 +118,29 @@ public abstract class Message
             builder.append(String.format("%n%s", this.getBody()));
         }
         builder.append("\u0000");
+    }
+
+    /**
+     * @return the messageCreatedDate
+     */
+    public Date getMessageCreatedDate()
+    {
+        return messageCreatedDate;
+    }
+
+    /**
+     * @return the correlationToken
+     */
+    public String getCorrelationToken()
+    {
+        return correlationToken;
+    }
+
+    /**
+     * @param correlationToken the correlationToken to set
+     */
+    public void setCorrelationToken(String correlationToken)
+    {
+        this.correlationToken = correlationToken;
     }
 }

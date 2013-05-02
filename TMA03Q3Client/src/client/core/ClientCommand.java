@@ -1,4 +1,4 @@
-package client;
+package client.core;
 
 /**
  *
@@ -6,12 +6,12 @@ package client;
  */
 public enum ClientCommand
 {
+    HELP("HELP", "Displays list of commands that can be used."),
     CONNECT("CONNECT", "Connects to the server"),
+    DISCONNECT("DISCONNECT", "Disconnects from the server."),
     LIST("LIST", "Lists all types of encryption methods the server supports."),
     ENCRYPT("ENCRYPT", "Encrypt {Text to encrypt}."),
     DECRYPT("DECRYPT", "Decrypt {Text to decrypt}."),
-    DISCONNECT("DISCONNECT", "Disconnects from the server."),
-    HELP("HELP", "Displays list of commands that can be used."),
     QUIT("QUIT", "Disconnects from the server if connected and ends this session."),
     UNKNOWN(null, null);
 

@@ -1,5 +1,7 @@
-package client;
+package client.core;
 
+
+import client.core.*;
 import core.protocol.*;
 import core.protocol.exceptions.MessageException;
 import java.io.*;
@@ -8,25 +10,15 @@ import java.util.*;
 import java.util.logging.*;
 
 /**
- * Title:        Client class
- * Description:  Skeleton client that connects to a server, receives and displays a
- *               message and then terminates
- * 
- * This class does not have any output streams set up yet, because
- * at the moment it only reads information from the server.
- * This class is based on Activity 9.6
  *
- * There is a method readKeyboardHelper provided to help test drive the server
- * while you are developing the client code.
- *
- * @author M257 Module Team
+ * @author Edward Wilde
  */
-public class Client
+public abstract class EncryptionSession
 {
     private static final int SERVER_PORT_NUMBER = 3000;
-    private static final Logger logger = Logger.getLogger(Client.class.getName());
+    private static final Logger logger = Logger.getLogger(EncryptionSession.class.getName());
 
-    //Streams used for communicating with server
+     //Streams used for communicating with server
     private InputStream is;
     private OutputStream os;
     private PrintWriter toServer;
@@ -36,80 +28,18 @@ public class Client
     private IResponseFactory responseFactory;
     private Response currentResponse;
     private boolean connected;
-    
-    public Client()
+    private final IEncryptionSessionListener listener;
+
+    public EncryptionSession(IEncryptionSessionListener listener)
     {
         this.responseFactory = new ResponseMessageFactory();
         this.connected = false;
+        this.listener = listener;
     }
-
-    public void run() throws MessageException
-    {
-        //set up connection to the server
-        try
-        {
-            connectToServer();
-
-            readKeyBoardHelper();
-
-            closeStreams();
-            socket.close();
-        }
-        catch (IOException e)
-        {
-            System.out.println("Exception in client run " + e);
-        }
-    }
-
-    private void readKeyBoardHelper() throws MessageException
-    {
-        Scanner sc = new Scanner(System.in);
-
-        System.out.println("Keyboard helper is waiting for input (use quit to end)");
-        
-        boolean terminated = false;
-        while(!terminated)
-        {
-            String next = sc.nextLine().toUpperCase();
-            switch(this.createClientCommand(next))
-            {
-                case CONNECT:
-                    this.doConnect();
-                    break;
-                case LIST:
-                    this.doList();
-                    break;
-                case DISCONNECT:
-                    this.doDisconnect();
-                    break;
-                case ENCRYPT:
-                    this.doEncrypt();
-                    break;
-                case DECRYPT:
-                    this.doDecrypt();
-                    break;
-                case QUIT:
-                    if (this.connected)
-                    {
-                        this.doDisconnect();
-                    }
-                    
-                    terminated = true;
-                    break;
-                case HELP:
-                    this.doHelp();
-                    break;
-                case UNKNOWN:
-                default:
-                    System.out.printf("Unknown command:%s%n", next);
-                    break;
-            }
-        }        
-    }
-
+    
     //this method creates a socket on the local host to
     //the specified port number, for communications with the server
-    private void connectToServer()
+    public void connectToServer()
     {
         try
         {
@@ -129,23 +59,23 @@ public class Client
         }
     }
 
-    // open streams for communicating with the server
-    private void openStreams() throws IOException
+     private void openStreams() throws IOException
     {
         final boolean AUTO_FLUSH = true;
-        is = socket.getInputStream();
-        fromServer = new BufferedReader(new InputStreamReader(is));
-        os = socket.getOutputStream();
-        toServer = new PrintWriter(os, AUTO_FLUSH);
+        this.is = socket.getInputStream();
+        this.fromServer = new BufferedReader(new InputStreamReader(is));
+        this.os = socket.getOutputStream();
+        this.toServer = new PrintWriter(os, AUTO_FLUSH);
     }
 
     // close streams to server
-    private void closeStreams() throws IOException
+    public void closeStreams() throws IOException
     {
-        toServer.close();
-        os.close();
-        fromServer.close();
-        is.close();
+        this.toServer.close();
+        this.os.close();
+        this.fromServer.close();
+        this.is.close();
+        this.socket.close();
     }
 
     private Request createRequest(Verb verb)
@@ -166,7 +96,7 @@ public class Client
         return request;
     }
 
-    private ClientCommand createClientCommand(String value)
+    public ClientCommand createClientCommand(String value)
     {
         if (value == null || value.length() == 0)
         {
@@ -188,9 +118,46 @@ public class Client
         }
     }
 
-    private void doConnect() throws MessageException
+    public void doCommand(ClientCommand clientCommand) throws MessageException
     {
-        if (this.connected)
+        switch(clientCommand)
+            {
+                case CONNECT:
+                    this.doConnect();
+                    break;
+                case LIST:
+                    this.doList();
+                    break;
+                case DISCONNECT:
+                    this.doDisconnect();
+                    break;
+                case ENCRYPT:
+                    this.doEncrypt();
+                    break;
+                case DECRYPT:
+                    this.doDecrypt();
+                    break;
+                case QUIT:
+                    if (this.isConnected())
+                    {
+                        this.doDisconnect();
+                    }
+
+                    this.doQuit();
+                    break;
+                case HELP:
+                    this.doHelp();
+                    break;
+                case UNKNOWN:
+                default:
+                    System.out.printf("Unknown command:%s%n", clientCommand.getName());
+                    break;
+            }
+    }
+
+    public void doConnect() throws MessageException
+    {
+        if (this.isConnected())
         {
             System.out.println("Already connected.");
             return;
@@ -203,13 +170,13 @@ public class Client
         }
     }
 
-    private void doDisconnect() throws MessageException
+    public void doDisconnect() throws MessageException
     {
         if (!this.checkConnected())
         {
             return;
         }
-        
+
         this.doRequestResponse(Verb.DISCONNECT);
 
         if (this.currentResponse.getStatusCode() == StatusCode.OK)
@@ -218,7 +185,7 @@ public class Client
         }
     }
 
-    private void doList() throws MessageException
+    public void doList() throws MessageException
     {
         if (!this.checkConnected())
         {
@@ -233,13 +200,10 @@ public class Client
        }
     }
 
-
-    private void doHelp()
-    {
-        System.out.println(ClientCommand.listCommands());
-    }
-
-    private void doEncrypt() throws MessageException
+    public abstract void doHelp();
+    public abstract String GetInputFromUser();
+    
+    public void doEncrypt() throws MessageException
     {
         if (!this.checkConnected())
         {
@@ -257,13 +221,13 @@ public class Client
         }
     }
 
-    private void doDecrypt() throws MessageException
+    public void doDecrypt() throws MessageException
     {
         if (!this.checkConnected())
         {
             return;
         }
-        
+
         String userInput = this.GetInputFromUser();
         Request request = this.createRequest(Verb.DECRYPT);
         request.setBody(userInput);
@@ -282,17 +246,23 @@ public class Client
 
     private void doRequestResponse(Request request) throws MessageException
     {
+        request.setCorrelationToken(UUID.randomUUID().toString());
+        this.listener.beforeRequestSend(request);
+
         this.currentResponse = this.SendRequest(request);
+        this.currentResponse.setCorrelationToken(request.getCorrelationToken());
+
         this.HandleResponse(this.currentResponse);
+        this.listener.afterResponseReceived(this.currentResponse);
     }
 
     private Response SendRequest(Request request) throws MessageException
     {
         toServer.print(String.format("%s%n", request.toString()));
         toServer.flush();
-        logger.log(Level.INFO, String.format("Send request: %s%n", 
+        logger.log(Level.INFO, String.format("Send request: %s%n",
                 request.toStringFirstLine()));
-                
+
         return responseFactory.createResponse(fromServer);
     }
 
@@ -312,32 +282,24 @@ public class Client
 
     private boolean checkConnected()
     {
-        if (!this.connected)
+        if (!this.isConnected())
         {
             System.out.println("Please CONNECT first.");
         }
 
-        return this.connected;
+        return this.isConnected();
     }
 
-    private String GetInputFromUser()
+    /**
+     * @return the connected
+     */
+    public boolean isConnected()
     {
-        System.out.println("Please enter text. To end enter blank line:");
-
-        StringBuilder clearText = new StringBuilder();
-        Scanner scanner = new Scanner(System.in);
-
-        while (true)
-        {
-            String line = scanner.nextLine();
-            if (line.equals(""))
-            {
-                break;
-            }
-
-            clearText.append(String.format("%s%n", line));
-        }
-
-        return clearText.toString();
+        return connected;
     }
+
+    public void doQuit()
+    {
+        this.listener.onDoQuit();
+    }          
 }

@@ -35,7 +35,7 @@ public enum Verb
 
     }
 
-    public static Verb getVerb(String value)
+    public static Verb getVerb(String value) throws IllegalArgumentException
     {
         if (!nameToVerbMapping.containsKey(value))
         {
