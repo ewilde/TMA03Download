@@ -207,8 +207,17 @@ public class EncryptionSession implements Runnable
 
     private Response createResponse(StatusCode statusCode, String body)
     {
+        String hostName = "Unknown";
+        try
+        {
+            hostName = java.net.InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException ex)
+        {
+        }
+
         Response response = new Response();
         response.setStatusCode(statusCode);
+        response.getHeaders().add(new Header("Server-Name", hostName));
 
         if (body != null)
         {

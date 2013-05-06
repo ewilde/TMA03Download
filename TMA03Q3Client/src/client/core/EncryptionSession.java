@@ -1,7 +1,6 @@
 package client.core;
 
 
-import client.core.*;
 import core.protocol.*;
 import core.protocol.exceptions.MessageException;
 import java.io.*;
@@ -10,7 +9,7 @@ import java.util.*;
 import java.util.logging.*;
 
 /**
- *
+ * Encapsulates core interaction between a client session and the server.
  * @author Edward Wilde
  */
 public abstract class EncryptionSession
@@ -52,10 +51,11 @@ public abstract class EncryptionSession
         }
         catch (IOException e)
         {
-            String ls = System.getProperty("line.separator");
-            System.out.println(ls + "Trouble contacting the server: " + e);
-            System.out.println("Perhaps you need to start the server?");
-            System.out.println("Make sure they're talking on the same port?" + ls);
+            String message = String.format(
+                "Trouble contacting the server: %n%s" +
+                "Perhaps you need to start the server?%n" +
+                "Make sure they're talking on the same port?", e);
+            this.listener.onError(message);
         }
     }
 
@@ -150,7 +150,7 @@ public abstract class EncryptionSession
                     break;
                 case UNKNOWN:
                 default:
-                    System.out.printf("Unknown command:%s%n", clientCommand.getName());
+                    this.listener.onError(String.format("Unknown command:%s%n", clientCommand.getName()));
                     break;
             }
     }
@@ -159,7 +159,7 @@ public abstract class EncryptionSession
     {
         if (this.isConnected())
         {
-            System.out.println("Already connected.");
+            this.listener.onWarn("Already connected.");
             return;
         }
 
@@ -201,6 +201,7 @@ public abstract class EncryptionSession
     }
 
     public abstract void doHelp();
+    
     public abstract String GetInputFromUser();
     
     public void doEncrypt() throws MessageException
@@ -284,7 +285,7 @@ public abstract class EncryptionSession
     {
         if (!this.isConnected())
         {
-            System.out.println("Please CONNECT first.");
+            this.listener.onWarn("Please CONNECT first.");
         }
 
         return this.isConnected();

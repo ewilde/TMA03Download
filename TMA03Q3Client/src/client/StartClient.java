@@ -7,9 +7,9 @@ import java.util.logging.*;
 
 /**
  * Title:        StartClient class
- * Description:  Tests the Client class
+ * Description:  Runs the console or UI application.
 
- * @author M257 Module Team
+ * @author Edward Wilde
  */
 
 public class StartClient
@@ -28,12 +28,25 @@ public class StartClient
         if (!loadUI)
         {
             ClientConsole console = new ClientConsole();
-            console.run();
+            try
+            {
+                console.run();
+            }
+            catch (MessageException ex)
+            {
+                Logger.getLogger(StartClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         else
         {
-            Application application = new Application();
-            application.setVisible(true);
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run()
+                {
+                    Application application = new Application();
+                    application.setVisible(true);
+                }
+            });
         }
    }
 }

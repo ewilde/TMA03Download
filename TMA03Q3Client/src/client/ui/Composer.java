@@ -4,6 +4,7 @@ import client.core.*;
 import core.protocol.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.UnknownHostException;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -90,9 +91,18 @@ public class Composer extends JPanel
             return;
         }
 
+        String hostName = "Unknown";
+        try
+        {
+            hostName = java.net.InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException ex)
+        {
+        }
+
         this.request = new Request();
         this.request.setVerb(this.getSelectedVerb());
         this.request.setBody(this.requestData.getText());
+        this.request.getHeaders().add(new Header("Client-Name", hostName));
         this.requestEditor.setText(this.request.toString());
     }
 

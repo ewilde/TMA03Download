@@ -10,22 +10,23 @@ import javax.swing.*;
  */
 public class UserInterfaceSession extends EncryptionSession
 {
-    private final Component parent;
-    public UserInterfaceSession(Component parent, IEncryptionSessionListener listener)
+    private final Application application;
+    public UserInterfaceSession(Application parent, IEncryptionSessionListener listener)
     {
         super(listener);
-        this.parent = parent;
+        this.application = parent;
     }
 
     @Override
     public void doHelp()
     {
-        JOptionPane.showMessageDialog(this.parent, ClientCommand.listCommands());
+        JOptionPane.showMessageDialog(this.application, ClientCommand.listCommands());
     }
 
     @Override
     public String GetInputFromUser()
     {
+        return this.application.getRequestData();
     }
 
 }

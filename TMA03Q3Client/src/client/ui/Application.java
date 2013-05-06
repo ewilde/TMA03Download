@@ -86,4 +86,16 @@ public class Application extends JFrame implements IApplication, IEncryptionSess
     {
         this.resultViewer.updateResult(response);
     }
+
+    @Override
+    public void onWarn(String message)
+    {
+        JOptionPane.showMessageDialog(this, message, "Warning", JOptionPane.WARNING_MESSAGE);
+    }
+
+    @Override
+    public void onError(String message)
+    {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
 }

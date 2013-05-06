@@ -54,32 +54,35 @@ public class ClientConsole implements IEncryptionSessionListener
         while(!terminated)
         {
             String next = sc.nextLine().toUpperCase();
-            
+            this.session.doCommand(this.session.createClientCommand(next));
         }        
     }
 
     @Override
     public void onDoQuit()
     {
-        // These methods were added after the console application was written
-        // during refactoring for the GUI. If I had time would come back adn
-        // refactor the console app. Although it still works, just not elegantly.
         this.terminated = true;
     }
 
+
     @Override
-    public void beforeRequestSend(Request request)
+    public void onWarn(String message)
     {
-        // These methods were added after the console application was written
-        // during refactoring for the GUI. If I had time would come back adn
-        // refactor the console app. Although it still works, just not elegantly.
+        logger.log(Level.WARNING, message);
     }
 
     @Override
-    public void afterResponseReceived(Response currentResponse)
+    public void onError(String message)
     {
-        // These methods were added after the console application was written
-        // during refactoring for the GUI. If I had time would come back adn
-        // refactor the console app. Although it still works, just not elegantly.
+        logger.log(Level.SEVERE, message);
     }
+    
+    // These methods were added after the console application was written
+    // during refactoring for the GUI. If I had time would come back and
+    // refactor the console app. Although it still works, just not elegantly.
+    @Override
+    public void beforeRequestSend(Request request){}
+
+    @Override
+    public void afterResponseReceived(Response currentResponse){}    
 }

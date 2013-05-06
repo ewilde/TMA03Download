@@ -34,6 +34,12 @@ public abstract class MessageFactory
                 builder.append(String.format("%s%n", buffer));
             }
 
+            // read off any data left after termination
+            while (reader.ready())
+            {
+                reader.read();
+            }
+
             builder.append(buffer);
 
         } catch (IOException ex) {
